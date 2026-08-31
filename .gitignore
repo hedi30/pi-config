@@ -1,0 +1,21 @@
+# Credentials and local environment
+.env
+.env.*
+!.env.example
+auth.json
+
+# Pi runtime state
+sessions/
+structured-returns/
+context.db*
+mcp-cache.json
+models-store.json
+trust.json
+npm/
+git/
+
+# Local tooling
+node_modules/
+.DS_Store
+*.log
+*.tmp
