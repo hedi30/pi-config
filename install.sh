@@ -88,7 +88,6 @@ cat <<'EOF'
 Installation complete.
 
 Machine-local follow-up:
-  1. Start `pi` and run `/login`.
-  2. Configure required MCP environment variables outside Git.
-  3. Trust project-local Pi configuration when prompted.
+  1. Start `pi` and run `/login` for each provider you use.
+  2. Trust project-local Pi configuration when prompted.
 EOF
