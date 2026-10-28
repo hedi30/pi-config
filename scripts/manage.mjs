@@ -14,8 +14,12 @@ const versionsPath = path.join(repoRoot, "versions.env");
 const managedFiles = [
   "settings.json",
   "keybindings.json",
+  "models.json",
+  "web-search.json",
   path.join("extensions", "pi-tool-display", "config.json"),
 ];
+
+const trackedFiles = managedFiles.filter((relative) => relative !== "settings.json");
 
 const exportOnlyOmittedSettings = new Set([
   "lastChangelogVersion",
@@ -90,7 +94,8 @@ function assertNoSecrets(value, label, keyPath = []) {
   if (isPlainObject(value)) {
     for (const [key, entry] of Object.entries(value)) {
       const fullPath = [...keyPath, key];
-      if (/(?:^|[_-])(password|passwd|secret|access[_-]?token|refresh[_-]?token|api[_-]?key|private[_-]?key|credential|cookie)(?:$|[_-])/i.test(key)) {
+      const isCommandReference = typeof entry === "string" && /^!\S/.test(entry);
+      if (/(?:^|[_-])(password|passwd|secret|access[_-]?token|refresh[_-]?token|api[_-]?key|private[_-]?key|credential|cookie)(?:$|[_-])/i.test(key) && !isCommandReference) {
         fail(`${label} contains a secret-like key at ${fullPath.join(".")}`);
       }
       assertNoSecrets(entry, label, fullPath);
@@ -153,11 +158,10 @@ function install(options) {
 
   const outputs = new Map([
     ["settings.json", formatJson(mergedSettings)],
-    ["keybindings.json", fs.readFileSync(path.join(configRoot, "keybindings.json"), "utf8")],
-    [
-      path.join("extensions", "pi-tool-display", "config.json"),
-      fs.readFileSync(path.join(configRoot, "extensions", "pi-tool-display", "config.json"), "utf8"),
-    ],
+    ...trackedFiles.map((relative) => [
+      relative,
+      fs.readFileSync(path.join(configRoot, relative), "utf8"),
+    ]),
   ]);
 
   for (const [relative, content] of outputs) {
@@ -192,11 +196,11 @@ function exportConfig(options) {
 
   const candidates = new Map([
     ["settings.json", formatJson(exportedSettings)],
-    ["keybindings.json", fs.readFileSync(path.join(sourceRoot, "keybindings.json"), "utf8")],
-    [
-      path.join("extensions", "pi-tool-display", "config.json"),
-      fs.readFileSync(path.join(sourceRoot, "extensions", "pi-tool-display", "config.json"), "utf8"),
-    ],
+    ...trackedFiles.map((relative) => {
+      const source = path.join(sourceRoot, relative);
+      if (!fs.existsSync(source)) fail(`missing ${relative} in ${sourceRoot}`);
+      return [relative, fs.readFileSync(source, "utf8")];
+    }),
   ]);
 
   for (const [relative, content] of candidates) {
@@ -237,7 +241,7 @@ function validateRepository() {
   const settings = readJson(path.join(configRoot, "settings.json"));
   const expectedPackages = [
     `npm:pi-powerline-footer@${versions.PI_POWERLINE_VERSION}`,
-    `npm:pi-mcp-adapter@${versions.PI_MCP_ADAPTER_VERSION}`,
+    `npm:pi-web-search@${versions.PI_WEB_SEARCH_VERSION}`,
   ];
 
   if (JSON.stringify(settings.packages) !== JSON.stringify(expectedPackages)) {
@@ -287,6 +291,7 @@ function validateRepository() {
 
   for (const relative of managedFiles) {
     if (!fs.existsSync(path.join(configRoot, relative))) fail(`missing managed file: config/${relative}`);
+    if (relative.endsWith(".json")) assertNoSecrets(readJson(path.join(configRoot, relative)), `config/${relative}`);
   }
 
   console.log(`Validated ${files.length} repository files; no secret-like content found`);

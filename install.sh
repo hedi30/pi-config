@@ -71,7 +71,7 @@ node "$ROOT_DIR/scripts/manage.mjs" "${MANAGE_ARGS[@]}"
 if ((SKIP_PACKAGES == 0)); then
   PACKAGE_SPECS=(
     "npm:pi-powerline-footer@$PI_POWERLINE_VERSION"
-    "npm:pi-mcp-adapter@$PI_MCP_ADAPTER_VERSION"
+    "npm:pi-web-search@$PI_WEB_SEARCH_VERSION"
   )
 
   for package in "${PACKAGE_SPECS[@]}"; do

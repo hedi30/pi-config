@@ -40,7 +40,7 @@ test("install preserves unrelated settings and backs up changed files", () => {
     );
 
     const stdout = run("install", agentDir, stateDir);
-    assert.match(stdout, /Updated 3 Pi configuration file/);
+    assert.match(stdout, /Updated 5 Pi configuration file/);
 
     const installed = JSON.parse(fs.readFileSync(path.join(agentDir, "settings.json"), "utf8"));
     assert.equal(installed.theme, "dark");
@@ -48,9 +48,11 @@ test("install preserves unrelated settings and backs up changed files", () => {
     assert.deepEqual(installed.customSetting, { preserved: true });
     assert.deepEqual(installed.packages, [
       "npm:pi-powerline-footer@0.16.0",
-      "npm:pi-mcp-adapter@2.31.0",
+      "npm:pi-web-search@1.7.0",
     ]);
     assert.ok(fs.existsSync(path.join(agentDir, "keybindings.json")));
+    assert.ok(fs.existsSync(path.join(agentDir, "models.json")));
+    assert.ok(fs.existsSync(path.join(agentDir, "web-search.json")));
     assert.ok(fs.existsSync(path.join(agentDir, "extensions", "pi-tool-display", "config.json")));
 
     const backups = path.join(stateDir, "pi-dotfiles", "backups");
@@ -69,7 +71,7 @@ test("dry-run does not create an agent directory", () => {
   const agentDir = path.join(root, "missing-agent");
 
   try {
-    assert.match(run("install", agentDir, path.join(root, "state"), "--dry-run"), /Would update 3 file/);
+    assert.match(run("install", agentDir, path.join(root, "state"), "--dry-run"), /Would update 5 file/);
     assert.equal(fs.existsSync(agentDir), false);
   } finally {
     fs.rmSync(root, { recursive: true, force: true });

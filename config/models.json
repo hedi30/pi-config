@@ -1,0 +1,35 @@
+{
+  "$schema": "https://pi.dev/schemas/models.schema.json",
+  "providers": {
+    "openrouter": {
+      "modelOverrides": {
+        "deepseek/deepseek-v4.1-flash-1017": {
+          "compat": {
+            "openRouterRouting": {
+              "only": ["nebius", "parasail"],
+              "order": ["nebius", "parasail"],
+              "allow_fallbacks": true
+            }
+          }
+        }
+      }
+    },
+    "openrouter-search": {
+      "name": "OpenRouter (search)",
+      "baseUrl": "https://openrouter.ai/api/v1",
+      "api": "anthropic-messages",
+      "apiKey": "!pi auth print-api-key --provider openrouter",
+      "models": [
+        {
+          "id": "deepseek/deepseek-v4.1-flash-1017",
+          "name": "DeepSeek V4.1 Flash (OpenRouter search)",
+          "reasoning": false,
+          "input": ["text"],
+          "cost": { "input": 0.3, "output": 1.2, "cacheRead": 0.006, "cacheWrite": 0 },
+          "contextWindow": 1048576,
+          "maxTokens": 65536
+        }
+      ]
+    }
+  }
+}
